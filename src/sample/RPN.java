@@ -6,38 +6,43 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 //reverse Polish notation
 public class RPN {
-    private String enterText;
-    private String exitText;
 
-
-    public RPN (String text){
-        this.enterText=changeTextWithNegativeNumbers(text);
-        this.exitText="";
-    }
 //for example: change (2+3)*5 to 2 3 + 5 *
-    public void changeEnterToExit(){
+    public String changeEnterToExit(String text){
+        String enterText=changeTextWithNegativeNumbers(text);
+        StringBuilder exitText= new StringBuilder();
         Stack<String> stack=new Stack<>();
         StringTokenizer stringTokenizer=new StringTokenizer(enterText,"+-*/()",true);
         while (stringTokenizer.hasMoreTokens()){
             String element=stringTokenizer.nextToken();
-            if( element.equals("+") || element.equals("*") || element.equals("-") || element.equals("/")){
-                while(!stack.empty() && getPriority(stack.peek()) >= getPriority(element))
-                    exitText += stack.pop()  + " ";
+            switch (element) {
+                case "+":
+                case "*":
+                case "-":
+                case "/":
+                    while (!stack.empty() && getPriority(stack.peek()) >= getPriority(element))
+                        exitText.append(stack.pop()).append(" ");
 
-                stack.push(element);
-            }
-            else if(element.equals("(")) stack.push(element);
-            else if(element.equals(")")) {
+                    stack.push(element);
+                    break;
+                case "(":
+                    stack.push(element);
+                    break;
+                case ")":
 
-                while(!stack.peek().equals("(")) exitText += stack.pop() + " ";
-                stack.pop();
+                    while (!stack.peek().equals("(")) exitText.append(stack.pop()).append(" ");
+                    stack.pop();
+                    break;
+                default:
+                    exitText.append(element).append(" ");
+                    break;
             }
-            else exitText += element  + " ";
         }
-        while(!stack.empty()) exitText += stack.pop()  + " ";
+        while(!stack.empty()) exitText.append(stack.pop()).append(" ");
+        return exitText.toString();
     }
     // calculate from reverse expression
-    public double calculate() throws EmptyStackException {
+    public double calculate(String exitText) throws EmptyStackException {
         Stack<Double>stack=new Stack<>();
         StringTokenizer stringTokenizer=new StringTokenizer(exitText," ");
         while(stringTokenizer.hasMoreTokens()) {
@@ -79,8 +84,8 @@ public class RPN {
         else return 0;
     }
     //check if numbers of brackets "("==numbers of brackets")" and their order
-    public boolean checkBrackets(){
-        Stack<String> stackForBrackets = new Stack<String>();
+    public boolean checkBrackets(String enterText){
+        Stack<String> stackForBrackets = new Stack<>();
         StringTokenizer st = new StringTokenizer(enterText, "()",true);
         while(st.hasMoreTokens()) {
             String elementInBracket = st.nextToken();
@@ -95,7 +100,7 @@ public class RPN {
     }
     //for example: change (-4)*(-2) to (0-4)*(0-2)
     private String changeTextWithNegativeNumbers(String text){
-        StringBuffer stringBuffer=new StringBuffer(text);
+        StringBuilder stringBuilder=new StringBuilder(text);
         ArrayList<Integer> list=new ArrayList<>();
         StringTokenizer stringTokenizer=new StringTokenizer(text,"-(",true);
         int fromIndex=0;
@@ -114,10 +119,10 @@ public class RPN {
         }
         int counter=1;
         for(Integer indexOfBracket:list){
-            stringBuffer.insert((int)(indexOfBracket+counter),'0');
+            stringBuilder.insert(indexOfBracket+counter,'0');
             counter++;
 
         }
-        return stringBuffer.toString();
+        return stringBuilder.toString();
     }
 }
